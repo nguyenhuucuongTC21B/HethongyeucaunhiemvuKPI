@@ -3,16 +3,21 @@
 /** Helper gọi API phía client — ném lỗi tiếng Việt rõ ràng */
 export async function api<T = unknown>(
   url: string,
-  options?: RequestInit & { json?: unknown }
+  options?: RequestInit & { json?: unknown; form?: FormData }
 ): Promise<T> {
-  const { json, ...rest } = options ?? {};
+  const { json, form, ...rest } = options ?? {};
   const res = await fetch(url, {
     ...rest,
     headers: {
       ...(json !== undefined ? { "Content-Type": "application/json" } : {}),
       ...(rest?.headers ?? {}),
     },
-    body: json !== undefined ? JSON.stringify(json) : rest?.body,
+    body:
+      json !== undefined
+        ? JSON.stringify(json)
+        : form instanceof FormData
+          ? form
+          : rest?.body,
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
@@ -27,30 +32,5 @@ export async function api<T = unknown>(
   return data as T;
 }
 
-export function formatDateTime(iso?: string | null): string {
-  if (!iso) return "—";
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "—";
-  return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
-}
-
-export function formatDate(iso?: string | null): string {
-  if (!iso) return "—";
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "—";
-  return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
-}
-
-export function formatBytes(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
-}
-
-export function toLocalInputValue(iso?: string | null): string {
-  if (!iso) return "";
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "";
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}
+// Định dạng ngày/giá trị — dùng chung với server component (nguồn thật ở lib/format)
+export { formatDateTime, formatDate, formatBytes, toLocalInputValue } from "@/lib/format";

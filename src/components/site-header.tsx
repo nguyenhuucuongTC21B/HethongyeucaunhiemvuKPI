@@ -12,7 +12,11 @@ import {
   LayoutDashboard,
   Landmark,
   LogOut,
+  Mail,
+  MapPin,
   Menu,
+  Newspaper,
+  Phone,
   ScrollText,
   Send,
   Settings,
@@ -33,6 +37,68 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
+/* ========================= Appearance (cấu hình giao diện) ========================= */
+
+export interface Appearance {
+  siteTitle: string;
+  siteSubtitle: string;
+  logoMediaId: string | null;
+  themePreset: string;
+  primaryColor: string;
+  heroTitle: string;
+  heroSubtitle: string;
+  orgEmail: string;
+  orgPhone: string;
+  orgAddress: string;
+  footerText: string;
+  showNews: boolean;
+  showVideos: boolean;
+  showSoftware: boolean;
+  allowRegistration: boolean;
+}
+
+let appearanceCache: Appearance | null = null;
+let appearanceCacheAt = 0;
+let appearancePromise: Promise<Appearance | null> | null = null;
+
+/** Xóa cache cấu hình giao diện (gọi sau khi Admin lưu cài đặt) */
+export function clearAppearanceCache() {
+  appearanceCache = null;
+  appearancePromise = null;
+  appearanceCacheAt = 0;
+}
+
+export function useAppearance(): Appearance | null {
+  const [appearance, setAppearance] = useState<Appearance | null>(appearanceCache);
+  useEffect(() => {
+    let active = true;
+    if (appearanceCache && Date.now() - appearanceCacheAt < 30_000) {
+      setAppearance(appearanceCache);
+      return;
+    }
+    appearancePromise ??= api<{ appearance: Appearance }>("/api/appearance")
+      .then((d) => {
+        appearanceCache = d.appearance;
+        appearanceCacheAt = Date.now();
+        return d.appearance;
+      })
+      .catch(() => null);
+    appearancePromise.then((a) => {
+      if (active) setAppearance(a);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+  return appearance;
+}
+
+export function logoSrcOf(a: Appearance | null): string {
+  return a?.logoMediaId ? `/api/media/${a.logoMediaId}` : "/logo-nganh.svg";
+}
+
+/* ========================= Header ========================= */
+
 interface AppNotification {
   id: string;
   title: string;
@@ -42,9 +108,17 @@ interface AppNotification {
   taskId?: string;
 }
 
+const PUBLIC_NAV = [
+  { href: "/", label: "Trang chủ" },
+  { href: "/tin-tuc", label: "Tin tức" },
+  { href: "/video", label: "Video" },
+  { href: "/phan-mem", label: "Phần mềm" },
+];
+
 export function SiteHeader() {
   const router = useRouter();
   const { user, loading, refresh } = useSession();
+  const appearance = useAppearance();
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [unread, setUnread] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -99,31 +173,59 @@ export function SiteHeader() {
       { href: "/tasks", label: "Nhiệm vụ", icon: ClipboardList, roles: ["technician", "admin"] },
       { href: "/kpi", label: "KPI cá nhân", icon: LayoutDashboard, roles: ["technician", "admin"] },
       { href: "/admin/kpi", label: "Dashboard KPI", icon: LayoutDashboard, roles: ["admin"] },
-      { href: "/admin/users", label: "Quản lý người dùng", icon: User, roles: ["admin"] },
+      { href: "/admin/users", label: "Người dùng", icon: User, roles: ["admin"] },
+      { href: "/admin/content", label: "Nội dung", icon: Newspaper, roles: ["admin"] },
+      { href: "/admin/appearance", label: "Giao diện", icon: Settings, roles: ["admin"] },
       { href: "/admin/audit", label: "Nhật ký", icon: ScrollText, roles: ["admin"] },
-      { href: "/admin/settings", label: "Cài đặt", icon: Settings, roles: ["admin"] },
+      { href: "/admin/settings", label: "Cấu hình", icon: Settings, roles: ["admin"] },
     ];
     return items.filter((i) => i.roles.includes(user.role));
   };
 
   const navItems = navByRole();
+  const siteTitle = appearance?.siteTitle || "VIỆN KIỂM SÁT NHÂN DÂN THÀNH PHỐ";
+  const siteSubtitle =
+    appearance?.siteSubtitle || "Hệ thống Quản lý Phân công Nhiệm vụ - Tính KPI";
 
   return (
     <header className="sticky top-0 z-50 no-print">
-      {/* Dải cơ quan */}
-      <div className="bg-primary text-primary-foreground">
+      {/* Dải liên hệ trên cùng */}
+      <div className="border-b border-white/10 bg-[color-mix(in_srgb,var(--primary)_88%,#000000)] text-primary-foreground/85">
+        <div className="mx-auto flex h-8 max-w-7xl items-center justify-between px-4 text-[11px] sm:text-xs">
+          <p className="flex items-center gap-1.5 truncate">
+            <Landmark className="h-3.5 w-3.5 shrink-0 text-amber-300" aria-hidden />
+            <span className="truncate">{siteTitle}</span>
+          </p>
+          <div className="flex items-center gap-3">
+            {appearance?.orgEmail && (
+              <a href={`mailto:${appearance.orgEmail}`} className="hidden items-center gap-1 hover:text-amber-300 sm:flex">
+                <Mail className="h-3.5 w-3.5" /> {appearance.orgEmail}
+              </a>
+            )}
+            {appearance?.orgPhone && (
+              <a href={`tel:${appearance.orgPhone}`} className="flex items-center gap-1 hover:text-amber-300">
+                <Phone className="h-3.5 w-3.5" /> {appearance.orgPhone}
+              </a>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Dải chính */}
+      <div className="bg-primary text-primary-foreground shadow-md">
         <div className="mx-auto max-w-7xl px-4">
-          <div className="flex h-14 items-center justify-between gap-2">
-            <Link href="/" className="flex items-center gap-2.5 min-w-0">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm bg-white/10">
-                <Landmark className="h-5 w-5" aria-hidden />
+          <div className="flex h-16 items-center justify-between gap-2">
+            <Link href={user ? "/my-proposals" : "/"} className="flex min-w-0 items-center gap-3">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white/10 ring-2 ring-amber-300/60">
+                { }
+                <img src={logoSrcOf(appearance)} alt="Logo ngành" className="h-full w-full object-cover" />
               </span>
-              <span className="truncate">
-                <span className="block font-serif text-[13px] font-bold leading-tight sm:text-sm">
-                  VIỆN KIỂM SÁT NHÂN DÂN THÀNH PHỐ
+              <span className="min-w-0">
+                <span className="block truncate font-serif text-[13px] font-bold leading-tight sm:text-[15px]">
+                  {siteTitle}
                 </span>
-                <span className="block text-[10px] uppercase tracking-wider text-primary-foreground/80 sm:text-[11px]">
-                  Hệ thống Quản lý Phân công Nhiệm vụ - Tính KPI
+                <span className="block truncate text-[10px] uppercase tracking-wider text-primary-foreground/75 sm:text-[11px]">
+                  {siteSubtitle}
                 </span>
               </span>
             </Link>
@@ -227,15 +329,27 @@ export function SiteHeader() {
                   </DropdownMenuContent>
                 </DropdownMenu>
               ) : !loading ? (
-                <Button
-                  asChild
-                  size="sm"
-                  className="h-9 bg-white text-primary hover:bg-white/90"
-                >
-                  <Link href="/login">
-                    <ShieldCheck className="mr-1.5 h-4 w-4" /> Đăng nhập
-                  </Link>
-                </Button>
+                <div className="flex items-center gap-1.5">
+                  <Button
+                    asChild
+                    size="sm"
+                    className="h-9 bg-white text-primary hover:bg-white/90"
+                  >
+                    <Link href="/login">
+                      <ShieldCheck className="mr-1.5 h-4 w-4" /> Đăng nhập
+                    </Link>
+                  </Button>
+                  {appearance?.allowRegistration !== false && (
+                    <Button
+                      asChild
+                      variant="outline"
+                      size="sm"
+                      className="hidden h-9 border-white/40 bg-white/5 text-white hover:bg-white/15 hover:text-white sm:inline-flex"
+                    >
+                      <Link href="/register">Đăng ký</Link>
+                    </Button>
+                  )}
+                </div>
               ) : null}
 
               <Button
@@ -253,58 +367,201 @@ export function SiteHeader() {
       </div>
 
       {/* Thanh điều hướng */}
-      {user && (
-        <nav className="border-b border-border bg-card shadow-sm">
-          <div className="mx-auto max-w-7xl px-4">
-            <div className={cn("gap-1 py-1.5 lg:flex lg:items-center", menuOpen ? "flex flex-col" : "hidden")}>
-              <Button
-                asChild
-                size="sm"
-                className="mr-2 my-1 hidden h-8 bg-agency hover:bg-agency-dark text-white lg:inline-flex"
-              >
-                <Link href="/proposal">
-                  <FilePlus2 className="mr-1.5 h-4 w-4" /> Gửi đề xuất
-                </Link>
-              </Button>
-              {navItems.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setMenuOpen(false)}
-                  className="flex items-center gap-1.5 rounded-sm px-2.5 py-1.5 my-0.5 text-sm font-medium text-foreground/80 transition-colors hover:bg-accent hover:text-primary"
+      <nav className="border-b border-border bg-card shadow-sm">
+        <div className="mx-auto max-w-7xl px-4">
+          <div
+            className={cn(
+              "gap-1 py-1.5 lg:flex lg:items-center",
+              menuOpen ? "flex flex-col" : "hidden"
+            )}
+          >
+            {user ? (
+              <>
+                <Button
+                  asChild
+                  size="sm"
+                  className="mr-2 my-1 hidden h-8 bg-agency hover:bg-agency-dark text-white lg:inline-flex"
                 >
-                  <item.icon className="h-4 w-4" />
-                  {item.label}
+                  <Link href="/proposal">
+                    <FilePlus2 className="mr-1.5 h-4 w-4" /> Gửi đề xuất
+                  </Link>
+                </Button>
+                {navItems.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setMenuOpen(false)}
+                    className="flex items-center gap-1.5 rounded-sm px-2.5 py-1.5 my-0.5 text-sm font-medium text-foreground/80 transition-colors hover:bg-accent hover:text-primary"
+                  >
+                    <item.icon className="h-4 w-4" />
+                    {item.label}
+                  </Link>
+                ))}
+                <Link
+                  href="/proposal"
+                  onClick={() => setMenuOpen(false)}
+                  className="flex items-center gap-1.5 rounded-sm bg-agency px-2.5 py-1.5 my-1 text-sm font-medium text-white lg:hidden"
+                >
+                  <FilePlus2 className="h-4 w-4" /> Gửi đề xuất
                 </Link>
-              ))}
-              <Link
-                href="/proposal"
-                onClick={() => setMenuOpen(false)}
-                className="flex items-center gap-1.5 rounded-sm bg-agency px-2.5 py-1.5 my-1 text-sm font-medium text-white lg:hidden"
-              >
-                <FilePlus2 className="h-4 w-4" /> Gửi đề xuất
-              </Link>
-            </div>
+              </>
+            ) : (
+              <>
+                {PUBLIC_NAV.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setMenuOpen(false)}
+                    className="flex items-center gap-1.5 rounded-sm px-3 py-1.5 my-0.5 text-sm font-semibold text-foreground/80 transition-colors hover:bg-accent hover:text-primary"
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+                {appearance?.allowRegistration !== false && (
+                  <Link
+                    href="/register"
+                    onClick={() => setMenuOpen(false)}
+                    className="flex items-center gap-1.5 rounded-sm px-3 py-1.5 my-0.5 text-sm font-semibold text-agency lg:hidden"
+                  >
+                    Đăng ký tài khoản
+                  </Link>
+                )}
+              </>
+            )}
           </div>
-        </nav>
-      )}
+        </div>
+      </nav>
     </header>
   );
 }
 
+/* ========================= Footer (nhấn mạnh, nhiều cột) ========================= */
+
 export function SiteFooter() {
+  const appearance = useAppearance();
+  const year = new Date().getFullYear();
+  const siteTitle = appearance?.siteTitle || "VIỆN KIỂM SÁT NHÂN DÂN THÀNH PHỐ";
+  const siteSubtitle =
+    appearance?.siteSubtitle || "Hệ thống Quản lý Phân công Nhiệm vụ - Tính KPI";
+
   return (
-    <footer className="mt-auto border-t border-border bg-card">
-      <div className="mx-auto max-w-7xl px-4 py-4">
-        <div className="flex flex-col items-center justify-between gap-2 text-center text-xs text-muted-foreground sm:flex-row sm:text-left">
-          <p>
-            © {new Date().getFullYear()} Viện Kiểm sát nhân dân Thành phố — Hệ thống Quản lý Phân
-            công Nhiệm vụ - Tính KPI
-          </p>
-          <p className="flex items-center gap-1.5">
-            <Wrench className="h-3.5 w-3.5" />
-            Bộ phận Kỹ thuật — Chỉ dùng cho mục đích công vụ
-          </p>
+    <footer className="mt-auto no-print">
+      {/* Dải chỉ dẫn vàng phía trên */}
+      <div className="h-1 bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500" aria-hidden />
+      <div className="bg-[linear-gradient(180deg,color-mix(in_srgb,var(--primary)_94%,#000000),color-mix(in_srgb,var(--primary)_88%,#000000))] text-primary-foreground">
+        <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
+          {/* Cột 1: Nhận diện */}
+          <div>
+            <div className="flex items-center gap-3">
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white/10 ring-2 ring-amber-300/60">
+                { }
+                <img src={logoSrcOf(appearance)} alt="Logo ngành" className="h-full w-full object-cover" />
+              </span>
+              <p className="font-serif text-sm font-bold leading-snug">{siteTitle}</p>
+            </div>
+            <p className="mt-3 text-xs leading-relaxed text-primary-foreground/70">
+              {siteSubtitle}
+            </p>
+            <p className="mt-3 inline-flex items-center gap-1.5 rounded-sm border border-white/15 bg-white/5 px-2.5 py-1 text-[11px] text-amber-200/90">
+              <ShieldCheck className="h-3.5 w-3.5" /> Dữ liệu lưu trữ vĩnh viễn trên Google Drive
+            </p>
+          </div>
+
+          {/* Cột 2: Liên kết nhanh */}
+          <div>
+            <p className="mb-3 text-xs font-bold uppercase tracking-widest text-amber-300">
+              Liên kết nhanh
+            </p>
+            <ul className="space-y-2 text-sm">
+              {[
+                { href: "/", label: "Trang chủ" },
+                { href: "/tin-tuc", label: "Tin tức - Thông báo" },
+                { href: "/video", label: "Video hướng dẫn" },
+                { href: "/phan-mem", label: "Phần mềm chuyên ngành" },
+                { href: "/login", label: "Đăng nhập hệ thống" },
+                ...(appearance?.allowRegistration !== false
+                  ? [{ href: "/register", label: "Đăng ký tài khoản" }]
+                  : []),
+              ].map((l) => (
+                <li key={l.href}>
+                  <Link
+                    href={l.href}
+                    className="text-primary-foreground/75 transition-colors hover:text-amber-300"
+                  >
+                    {l.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Cột 3: Liên hệ */}
+          <div>
+            <p className="mb-3 text-xs font-bold uppercase tracking-widest text-amber-300">
+              Thông tin liên hệ
+            </p>
+            <ul className="space-y-2.5 text-sm text-primary-foreground/75">
+              <li className="flex items-start gap-2">
+                <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-amber-300/80" aria-hidden />
+                <span>{appearance?.orgAddress || "Địa chỉ trụ sở Viện"}</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Mail className="mt-0.5 h-4 w-4 shrink-0 text-amber-300/80" aria-hidden />
+                <a href={`mailto:${appearance?.orgEmail || ""}`} className="hover:text-amber-300">
+                  {appearance?.orgEmail || "—"}
+                </a>
+              </li>
+              <li className="flex items-start gap-2">
+                <Phone className="mt-0.5 h-4 w-4 shrink-0 text-amber-300/80" aria-hidden />
+                <span>{appearance?.orgPhone || "—"} (Bộ phận Kỹ thuật)</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Wrench className="mt-0.5 h-4 w-4 shrink-0 text-amber-300/80" aria-hidden />
+                <span>Giờ hỗ trợ: 8h00 – 17h00, ngày làm việc</span>
+              </li>
+            </ul>
+          </div>
+
+          {/* Cột 4: Hỗ trợ */}
+          <div>
+            <p className="mb-3 text-xs font-bold uppercase tracking-widest text-amber-300">
+              Hỗ trợ sử dụng
+            </p>
+            <ul className="space-y-2 text-sm">
+              {[
+                { href: "/forgot-password", label: "Quên mật khẩu" },
+                { href: "/login", label: "Đăng nhập hệ thống" },
+                { href: "/register", label: "Đăng ký tài khoản mới" },
+                { href: "/tin-tuc", label: "Quy định - Nội quy" },
+              ].map((l) => (
+                <li key={l.href + l.label}>
+                  <Link
+                    href={l.href}
+                    className="text-primary-foreground/75 transition-colors hover:text-amber-300"
+                  >
+                    {l.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-4 rounded-sm border border-white/15 bg-white/5 p-2.5 text-[11px] leading-relaxed text-primary-foreground/70">
+              Mọi sự cố kỹ thuật vui lòng gửi đề xuất qua hệ thống để được ghi nhận và xử lý đúng
+              quy trình.
+            </p>
+          </div>
+        </div>
+
+        {/* Dải bản quyền */}
+        <div className="border-t border-white/10">
+          <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-1.5 px-4 py-3.5 text-center text-[11px] text-primary-foreground/60 sm:flex-row sm:text-left">
+            <p>
+              © {year} {siteTitle}. {appearance?.footerText || "Bộ phận Kỹ thuật — Chỉ dùng cho mục đích công vụ"}
+            </p>
+            <p className="flex items-center gap-1.5">
+              <Landmark className="h-3.5 w-3.5 text-amber-300/70" aria-hidden />
+              Hệ thống Quản lý Phân công Nhiệm vụ - Tính KPI
+            </p>
+          </div>
         </div>
       </div>
     </footer>

@@ -32,7 +32,35 @@ export async function PUT(req: Request) {
     siteSubtitle?: string;
     allowSelfAssign?: boolean;
     kpiWeights?: Partial<KpiWeights>;
+    logoMediaId?: string | null;
+    themePreset?: "navy" | "crimson" | "custom";
+    primaryColor?: string;
+    heroTitle?: string;
+    heroSubtitle?: string;
+    orgEmail?: string;
+    orgPhone?: string;
+    orgAddress?: string;
+    footerText?: string;
+    showNews?: boolean;
+    showVideos?: boolean;
+    showSoftware?: boolean;
+    allowRegistration?: boolean;
+    techRegCode?: string;
+    adminRegCode?: string;
   };
+
+  /* --- Kiểm tra màu tùy chỉnh --- */
+  let primaryColor: string | undefined;
+  if (body.primaryColor !== undefined) {
+    const hex = String(body.primaryColor).trim();
+    if (!/^#[0-9a-fA-F]{6}$/.test(hex)) {
+      return NextResponse.json({ error: "Màu chủ đạo phải đúng định dạng #RRGGBB" }, { status: 400 });
+    }
+    primaryColor = hex.toLowerCase();
+  }
+  if (body.themePreset !== undefined && !["navy", "crimson", "custom"].includes(body.themePreset)) {
+    return NextResponse.json({ error: "Chủ đề màu không hợp lệ" }, { status: 400 });
+  }
 
   const weights: KpiWeights = {
     completion: Number(body.kpiWeights?.completion ?? DEFAULT_KPI_WEIGHTS.completion),
@@ -58,7 +86,23 @@ export async function PUT(req: Request) {
     if (body.siteTitle !== undefined) s.siteTitle = body.siteTitle.trim() || s.siteTitle;
     if (body.siteSubtitle !== undefined) s.siteSubtitle = body.siteSubtitle.trim() || s.siteSubtitle;
     if (body.allowSelfAssign !== undefined) s.allowSelfAssign = Boolean(body.allowSelfAssign);
-    s.kpiWeights = weights;
+    if (body.kpiWeights !== undefined) s.kpiWeights = weights;
+    /* --- Giao diện --- */
+    if (body.logoMediaId !== undefined) s.logoMediaId = body.logoMediaId || null;
+    if (body.themePreset !== undefined) s.themePreset = body.themePreset;
+    if (primaryColor !== undefined) s.primaryColor = primaryColor;
+    if (body.heroTitle !== undefined) s.heroTitle = body.heroTitle.trim();
+    if (body.heroSubtitle !== undefined) s.heroSubtitle = body.heroSubtitle.trim();
+    if (body.orgEmail !== undefined) s.orgEmail = body.orgEmail.trim();
+    if (body.orgPhone !== undefined) s.orgPhone = body.orgPhone.trim();
+    if (body.orgAddress !== undefined) s.orgAddress = body.orgAddress.trim();
+    if (body.footerText !== undefined) s.footerText = body.footerText.trim();
+    if (body.showNews !== undefined) s.showNews = Boolean(body.showNews);
+    if (body.showVideos !== undefined) s.showVideos = Boolean(body.showVideos);
+    if (body.showSoftware !== undefined) s.showSoftware = Boolean(body.showSoftware);
+    if (body.allowRegistration !== undefined) s.allowRegistration = Boolean(body.allowRegistration);
+    if (body.techRegCode !== undefined) s.techRegCode = body.techRegCode.trim();
+    if (body.adminRegCode !== undefined) s.adminRegCode = body.adminRegCode.trim();
     s.updatedAt = new Date().toISOString();
     return s;
   });

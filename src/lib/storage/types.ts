@@ -118,7 +118,69 @@ export interface AppSettings {
   siteSubtitle: string;
   allowSelfAssign: boolean;
   kpiWeights: KpiWeights;
+  /* --- Giao diện & nhận diện (Admin chỉnh trong /admin/appearance) --- */
+  logoMediaId?: string | null;
+  themePreset?: "navy" | "crimson" | "custom";
+  primaryColor?: string;
+  heroTitle?: string;
+  heroSubtitle?: string;
+  orgEmail?: string;
+  orgPhone?: string;
+  orgAddress?: string;
+  footerText?: string;
+  showNews?: boolean;
+  showVideos?: boolean;
+  showSoftware?: boolean;
+  allowRegistration?: boolean;
+  techRegCode?: string;
+  adminRegCode?: string;
   updatedAt: string;
+}
+
+/* ========================= Nội dung công khai ========================= */
+
+/** Tin bài / thông báo do Admin đăng */
+export interface Post {
+  id: string;
+  title: string;
+  summary: string;
+  content: string;
+  category?: string;
+  coverMediaId?: string | null;
+  pinned?: boolean;
+  published: boolean;
+  authorName?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** Video hướng dẫn / truyền thông (link YouTube) */
+export interface VideoItem {
+  id: string;
+  title: string;
+  description?: string;
+  youtubeUrl: string;
+  published: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** Link phần mềm chuyên ngành */
+export interface SoftwareLink {
+  id: string;
+  name: string;
+  description?: string;
+  url: string;
+  category?: string;
+  published: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** Metadata ảnh media công khai (logo, ảnh bìa) */
+export interface MediaRecord extends AttachmentMeta {
+  uploadedBy?: string;
+  createdAt: string;
 }
 
 /* ========================= Storage backend ========================= */

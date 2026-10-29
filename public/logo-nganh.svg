@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Logo ngành Kiểm sát nhân dân">
+  <defs>
+    <radialGradient id="bgNavy" cx="50%" cy="42%" r="75%">
+      <stop offset="0%" stop-color="#2c5282"/>
+      <stop offset="55%" stop-color="#1a3a5c"/>
+      <stop offset="100%" stop-color="#0f2740"/>
+    </radialGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f2d06b"/>
+      <stop offset="45%" stop-color="#d4af37"/>
+      <stop offset="100%" stop-color="#a8821f"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Vòng tròn ngoài -->
+  <circle cx="256" cy="256" r="248" fill="url(#bgNavy)"/>
+  <circle cx="256" cy="256" r="248" fill="none" stroke="url(#gold)" stroke-width="10"/>
+  <circle cx="256" cy="256" r="226" fill="none" stroke="#d4af37" stroke-width="2" opacity="0.85"/>
+  <circle cx="256" cy="256" r="214" fill="none" stroke="#d4af37" stroke-width="1" stroke-dasharray="4 7" opacity="0.6"/>
+
+  <!-- Tia sáng phía sau -->
+  <g stroke="#f2d06b" stroke-width="2" opacity="0.14">
+    <line x1="256" y1="60" x2="256" y2="96"/>
+    <line x1="130" y1="98" x2="154" y2="126"/>
+    <line x1="382" y1="98" x2="358" y2="126"/>
+    <line x1="80" y1="216" x2="116" y2="222"/>
+    <line x1="432" y1="216" x2="396" y2="222"/>
+  </g>
+
+  <!-- Ngôi sao vàng (tượng trưng Chủ nghĩa Xã hội) -->
+  <polygon fill="url(#gold)" points="256,92 267.4,124.6 301.7,125.2 274.9,146.1 284.4,178.6 256,159.2 227.6,178.6 237.1,146.1 210.3,125.2 244.6,124.6"/>
+
+  <!-- Cán cân công lý -->
+  <g fill="url(#gold)" stroke="url(#gold)">
+    <rect x="250" y="196" width="12" height="158" rx="6" stroke="none"/>
+    <circle cx="256" cy="192" r="12" stroke="none"/>
+    <rect x="164" y="240" width="184" height="10" rx="5" stroke="none"/>
+  </g>
+  <!-- Cân trái -->
+  <g stroke="#d4af37" stroke-width="4" fill="none" stroke-linecap="round">
+    <line x1="172" y1="250" x2="150" y2="300"/>
+    <line x1="172" y1="250" x2="194" y2="300"/>
+  </g>
+  <path d="M144,300 L200,300 A28,28 0 0 1 144,300 Z" fill="url(#gold)"/>
+  <!-- Cân phải -->
+  <g stroke="#d4af37" stroke-width="4" fill="none" stroke-linecap="round">
+    <line x1="340" y1="250" x2="318" y2="300"/>
+    <line x1="340" y1="250" x2="362" y2="300"/>
+  </g>
+  <path d="M312,300 L368,300 A28,28 0 0 1 312,300 Z" fill="url(#gold)"/>
+  <!-- Bệ đỡ -->
+  <rect x="222" y="358" width="68" height="12" rx="5" fill="url(#gold)"/>
+  <rect x="204" y="376" width="104" height="12" rx="5" fill="url(#gold)"/>
+
+  <!-- Vòng nguyệt quế -->
+  <g stroke="url(#gold)" stroke-width="5" fill="none" stroke-linecap="round">
+    <path d="M108,290 Q112,392 214,440"/>
+    <path d="M404,290 Q400,392 298,440"/>
+  </g>
+  <g fill="#d4af37" opacity="0.95">
+    <ellipse cx="106" cy="316" rx="7" ry="16" transform="rotate(-12 106 316)"/>
+    <ellipse cx="112" cy="352" rx="7" ry="16" transform="rotate(-6 112 352)"/>
+    <ellipse cx="126" cy="386" rx="7" ry="16" transform="rotate(6 126 386)"/>
+    <ellipse cx="148" cy="414" rx="7" ry="16" transform="rotate(22 148 414)"/>
+    <ellipse cx="176" cy="432" rx="7" ry="16" transform="rotate(40 176 432)"/>
+    <ellipse cx="406" cy="316" rx="7" ry="16" transform="rotate(12 406 316)"/>
+    <ellipse cx="400" cy="352" rx="7" ry="16" transform="rotate(6 400 352)"/>
+    <ellipse cx="386" cy="386" rx="7" ry="16" transform="rotate(-6 386 386)"/>
+    <ellipse cx="364" cy="414" rx="7" ry="16" transform="rotate(-22 364 414)"/>
+    <ellipse cx="336" cy="432" rx="7" ry="16" transform="rotate(-40 336 432)"/>
+  </g>
+</svg>

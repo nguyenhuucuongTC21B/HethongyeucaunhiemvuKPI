@@ -167,12 +167,31 @@ export const COLLECTIONS = {
   AUDIT_LOGS: "audit_logs",
   COUNTERS: "counters",
   SETTINGS: "settings",
+  POSTS: "posts",
+  VIDEOS: "videos",
+  SOFTWARE: "software",
+  MEDIA: "media",
 } as const;
 
 /** Tên đơn vị mặc định (hiển thị banner) */
 export const DEFAULT_SITE_TITLE = "VIỆN KIỂM SÁT NHÂN DÂN THÀNH PHỐ";
 export const DEFAULT_SITE_SUBTITLE =
   "HỆ THỐNG QUẢN LÝ PHÂN CÔNG NHIỆM VỤ KỸ THUẬT - ĐÁNH GIÁ KPI";
+
+/** Màu chủ đề mặc định */
+export const THEME_PRESETS = {
+  navy: { primary: "#1a3a5c", agency: "#8b1a1a" },
+  crimson: { primary: "#7a1616", agency: "#b8860b" },
+} as const;
+export type ThemePreset = keyof typeof THEME_PRESETS | "custom";
+
+/** Mã đăng ký mặc định (Admin có thể đổi trong Cài đặt giao diện) */
+export const DEFAULT_TECH_REG_CODE = "KYTHUAT-2026";
+export const DEFAULT_ADMIN_REG_CODE = "ADMIN-2026";
+
+/** Giới hạn ảnh media upload (logo / ảnh bìa tin bài) */
+export const MAX_MEDIA_SIZE = 5 * 1024 * 1024; // 5MB
+export const ALLOWED_MEDIA_TYPES = "image/jpeg,image/png,image/webp,image/gif";
 
 /** Trọng số KPI mặc định (tổng = 1) */
 export const DEFAULT_KPI_WEIGHTS = {

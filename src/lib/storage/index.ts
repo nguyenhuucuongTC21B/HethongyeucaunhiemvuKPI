@@ -19,8 +19,12 @@ import type {
   AppSettings,
   AuditLog,
   Counters,
+  MediaRecord,
+  Post,
+  SoftwareLink,
   Task,
   User,
+  VideoItem,
 } from "./types";
 import { isDriveConfigured, driveBackend } from "./drive";
 import { localBackend } from "./local";
@@ -145,6 +149,22 @@ export function defaultSettings(): AppSettings {
     siteSubtitle: process.env.SITE_SUBTITLE || DEFAULT_SITE_SUBTITLE,
     allowSelfAssign: true,
     kpiWeights: { ...DEFAULT_KPI_WEIGHTS },
+    logoMediaId: null,
+    themePreset: "navy",
+    primaryColor: "#1a3a5c",
+    heroTitle: "HỆ THỐNG QUẢN LÝ PHÂN CÔNG NHIỆM VỤ KỸ THUẬT",
+    heroSubtitle:
+      "Tiếp nhận, phân công và theo dõi tiến độ các đề xuất nhiệm vụ kỹ thuật của cán bộ, công chức trong toàn Viện. Đánh giá KPI minh bạch, công bằng theo số liệu thực tế.",
+    orgEmail: "admin@vien.gov.vn",
+    orgPhone: "",
+    orgAddress: "",
+    footerText: "Bộ phận Kỹ thuật — Chỉ dùng cho mục đích công vụ",
+    showNews: true,
+    showVideos: true,
+    showSoftware: true,
+    allowRegistration: true,
+    techRegCode: "KYTHUAT-2026",
+    adminRegCode: "ADMIN-2026",
     updatedAt: new Date().toISOString(),
   };
 }
@@ -312,6 +332,63 @@ export async function updateSettings<R>(
 /** Thời điểm đọc gần nhất (dùng cho optimistic update trong 1 lần gọi API) */
 export async function readStamp(name: string): Promise<string> {
   return backend.stamp(name);
+}
+
+/* ------------------------- Nội dung công khai (tin/video/phần mềm) ------------------------- */
+
+// Tin bài
+export async function getPosts(): Promise<Post[]> {
+  return (await readCollection<Post[]>(COLLECTIONS.POSTS)) ?? [];
+}
+export async function updatePosts<R>(fn: (list: Post[]) => R | typeof ABORT): Promise<R> {
+  return mutateCollection<Post[], R>(COLLECTIONS.POSTS, [], fn);
+}
+
+// Video
+export async function getVideos(): Promise<VideoItem[]> {
+  return (await readCollection<VideoItem[]>(COLLECTIONS.VIDEOS)) ?? [];
+}
+export async function updateVideos<R>(fn: (list: VideoItem[]) => R | typeof ABORT): Promise<R> {
+  return mutateCollection<VideoItem[], R>(COLLECTIONS.VIDEOS, [], fn);
+}
+
+// Phần mềm chuyên ngành
+export async function getSoftware(): Promise<SoftwareLink[]> {
+  return (await readCollection<SoftwareLink[]>(COLLECTIONS.SOFTWARE)) ?? [];
+}
+export async function updateSoftware<R>(fn: (list: SoftwareLink[]) => R | typeof ABORT): Promise<R> {
+  return mutateCollection<SoftwareLink[], R>(COLLECTIONS.SOFTWARE, [], fn);
+}
+
+/**
+ * Danh sách id media được phép truy cập công khai (logo, ảnh bìa tin bài).
+ * Dùng để bảo vệ /api/media/[id]: không rò rỉ tệp đính kèm nhiệm vụ.
+ */
+export async function publicMediaIds(): Promise<Set<string>> {
+  const ids = new Set<string>();
+  try {
+    const s = await getSettings();
+    if (s.logoMediaId) ids.add(s.logoMediaId);
+  } catch { /* ignore */ }
+  try {
+    const posts = await getPosts();
+    for (const p of posts) if (p.coverMediaId) ids.add(p.coverMediaId);
+  } catch { /* ignore */ }
+  return ids;
+}
+
+// Media registry (metadata ảnh upload)
+export async function getMediaRecords(): Promise<MediaRecord[]> {
+  return (await readCollection<MediaRecord[]>(COLLECTIONS.MEDIA)) ?? [];
+}
+export async function updateMediaRecords<R>(
+  fn: (list: MediaRecord[]) => R | typeof ABORT
+): Promise<R> {
+  return mutateCollection<MediaRecord[], R>(COLLECTIONS.MEDIA, [], fn);
+}
+export async function findMediaRecord(id: string): Promise<MediaRecord | null> {
+  const list = await getMediaRecords();
+  return list.find((m) => m.id === id) ?? null;
 }
 
 /* ------------------------- Attachments ------------------------- */
