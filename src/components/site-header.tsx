@@ -94,7 +94,7 @@ export function useAppearance(): Appearance | null {
 }
 
 export function logoSrcOf(a: Appearance | null): string {
-  return a?.logoMediaId ? `/api/media/${a.logoMediaId}` : "/logo-nganh.svg";
+  return a?.logoMediaId ? `/api/media/${a.logoMediaId}` : "/logo-nganh.png";
 }
 
 /* ========================= Header ========================= */

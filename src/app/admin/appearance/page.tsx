@@ -141,14 +141,14 @@ export default function AdminAppearancePage() {
             <span className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full border-2 border-amber-400/60 bg-secondary">
               { }
               <img
-                src={s.logoMediaId ? `/api/media/${s.logoMediaId}` : "/logo-nganh.svg"}
+                src={s.logoMediaId ? `/api/media/${s.logoMediaId}` : "/logo-nganh.png"}
                 alt="Logo hiện tại"
                 className="h-full w-full object-cover"
               />
             </span>
             <div className="space-y-2">
               <p className="text-sm text-muted-foreground">
-                Mặc định hệ thống dùng logo ngành (sao vàng, cán cân công lý). Bạn có thể tải logo
+                Logo mặc định: biểu tượng Kiểm sát nhân dân Việt Nam. Bạn có thể tải logo
                 chính thức của cơ quan lên (JPG/PNG/WebP, tối đa 5MB, nên chọn hình vuông).
               </p>
               <div className="flex gap-2">

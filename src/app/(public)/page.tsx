@@ -73,7 +73,7 @@ export default async function HomePage() {
         />
         <div
           className="pointer-events-none absolute -right-24 -top-24 h-[420px] w-[420px] rounded-full opacity-[0.08]"
-          style={{ backgroundImage: "url(/logo-nganh.svg)", backgroundSize: "contain", backgroundRepeat: "no-repeat" }}
+          style={{ backgroundImage: "url(/logo-nganh.png)", backgroundSize: "contain", backgroundRepeat: "no-repeat" }}
           aria-hidden
         />
         <div className="relative mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:py-20 lg:grid-cols-[1.4fr_1fr] lg:items-center">

@@ -163,7 +163,7 @@ function RegisterForm() {
             <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white/10 ring-2 ring-amber-300/60">
               { }
               <img
-                src={appearance?.logoMediaId ? `/api/media/${appearance.logoMediaId}` : "/logo-nganh.svg"}
+                src={appearance?.logoMediaId ? `/api/media/${appearance.logoMediaId}` : "/logo-nganh.png"}
                 alt="Logo ngành"
                 className="h-full w-full object-cover"
               />
